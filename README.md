@@ -1,10 +1,10 @@
-# Frame.ink (Self-Hosted)
+# FrameLab (Self-Hosted)
 
 A lightweight, privacy-focused dashboard for your E-Ink frames. 
 Designed for the Raspberry Pi + Inky Impression (7.3").
 
 ## Setup
-1. Clone this repo to your Pi: `git clone https://github.com/senor/frame-ink-oss.git ~/frame-ink`
+1. Clone this repo to your Pi: `git clone ...`
 2. Run the installer: `sudo bash pi/install.sh`
 3. Follow the terminal instructions.
 

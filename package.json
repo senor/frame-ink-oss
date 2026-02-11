@@ -1,17 +1,17 @@
 {
-  "name": "frame-ink",
+  "name": "framelab",
   "private": true,
   "version": "0.0.0",
   "repository": {
     "type": "git",
-    "url": "https://github.com/senor/frame-ink-oss.git"
+    "url": "https://github.com/senor/framelab-oss.git"
   },
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
     "preview": "vite preview",
-    "sync:pi": "nodemon --watch pi -e py,sh,md,txt --exec \"scp -r pi/*.py pi/*.sh pi/*.md pi/*.txt mashi@frame-ink.local:~/frame-ink/ && echo '🚀 Synced to Pi'\""
+    "sync:pi": "nodemon --watch pi -e py,sh,md,txt --exec \"scp -r pi/*.py pi/*.sh pi/*.md pi/*.txt mashi@framelab.local:~/framelab/ && echo '🚀 Synced to Pi'\""
   },
   "dependencies": {
     "cropperjs": "^1.6.2",

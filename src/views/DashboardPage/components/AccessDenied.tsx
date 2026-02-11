@@ -22,7 +22,7 @@ export function AccessDenied({ email, onSignOut }: AccessDeniedProps) {
                         </div>
                         <h3 className="brand-font text-5xl mb-6 text-center leading-none uppercase text-ink">Access<br />Denied</h3>
                         <p className="mono-font text-[11px] font-black uppercase tracking-widest mb-10 opacity-60 text-center leading-relaxed text-ink">
-                            The account <span className="bg-ink text-paper px-1">{email}</span> has not been whitelisted for the Frame.ink beta yet.
+                            The account <span className="bg-ink text-paper px-1">{email}</span> has not been whitelisted for the FrameLab beta yet.
                         </p>
 
                         <div className="space-y-4">

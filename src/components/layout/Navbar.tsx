@@ -11,7 +11,7 @@ export function Navbar({ onSignInClick }: NavbarProps) {
                 <a href="/" className="group no-underline">
                     <h2 className="brand-font leading-none text-5xl text-ink flex items-baseline gap-1">
                         <span>FRAME</span>
-                        <span className="text-4xl serif-italic text-[color:var(--pink)] lowercase tracking-tight font-bold ml-1 transition-colors">ink</span>
+                        <span className="text-4xl serif-italic text-[color:var(--pink)] lowercase tracking-tight font-bold ml-1 transition-colors">lab</span>
                     </h2>
                 </a>
             </div>

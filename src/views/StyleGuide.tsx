@@ -109,7 +109,7 @@ export default function StyleGuide() {
                     <div className="p-12 pb-8">
                         <h1 className="brand-font leading-none text-ink flex w-full justify-between items-baseline mb-2">
                             <span className="text-3xl">FRAME</span>
-                            <span className="text-2xl serif-italic text-[color:var(--pink)] lowercase tracking-tight font-bold">ink</span>
+                            <span className="text-2xl serif-italic text-[color:var(--pink)] lowercase tracking-tight font-bold">lab</span>
                         </h1>
                         <p className="mono-font text-[8px] uppercase tracking-[0.3em] opacity-30">Style_Guide // v2.2</p>
                     </div>
@@ -160,7 +160,7 @@ export default function StyleGuide() {
                                 <div>
                                     <h1 className="brand-font leading-none text-ink flex w-full justify-between items-baseline mb-2">
                                         <span className="text-3xl">FRAME</span>
-                                        <span className="text-2xl serif-italic text-[color:var(--pink)] lowercase tracking-tight font-bold">ink</span>
+                                        <span className="text-2xl serif-italic text-[color:var(--pink)] lowercase tracking-tight font-bold">lab</span>
                                     </h1>
                                     <p className="mono-font text-[8px] uppercase tracking-[0.3em] opacity-30">v2.2</p>
                                 </div>
@@ -344,7 +344,7 @@ export default function StyleGuide() {
                                         </div>
                                         <div className="border-l-4 border-ink pl-8">
                                             <p className="mono-font text-[10px] uppercase tracking-widest opacity-50 mb-2">Syne / 8XL (96px) / Extended Title Display</p>
-                                            <h3 className="title-font text-8xl uppercase">FRAME.ink</h3>
+                                            <h3 className="title-font text-8xl uppercase">FRAMELAB.ink</h3>
                                         </div>
                                         <div className="border-l-4 border-[color:var(--gold)] pl-8">
                                             <p className="mono-font text-[10px] uppercase tracking-widest opacity-50 mb-2">Space Mono / 4XL (36px)</p>
@@ -383,11 +383,11 @@ export default function StyleGuide() {
                                         </div>
                                         <div className="space-y-8">
                                             <CodeBlock
-                                                code="curl -sSL https://get.frame.ink/install | bash"
+                                                code="curl -sSL https://get.framelab.ink/install | bash"
                                                 accentColor="blue"
                                             />
                                             <CodeBlock
-                                                code="curl -sSL https://get.frame.ink/add | bash"
+                                                code="curl -sSL https://get.framelab.ink/add | bash"
                                                 accentColor="orange"
                                             />
                                             <div className="pt-8 space-y-4">

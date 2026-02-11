@@ -1,6 +1,6 @@
 import { IFrameBackend, Img, Config } from './backend';
 
-const API_BASE = import.meta.env.VITE_LOCAL_API_URL || 'http://frame-ink.local:8000';
+const API_BASE = import.meta.env.VITE_LOCAL_API_URL || 'http://framelab.local:8000';
 
 export class LocalBackend implements IFrameBackend {
     // Polling intervals for local mode
@@ -23,14 +23,11 @@ export class LocalBackend implements IFrameBackend {
                 const res = await fetch(`${API_BASE}/api/images`);
                 if (res.ok) {
                     const data = await res.json();
-                    // Transform local data to match Img interface
-                    // Local API returns { id, name, url, size }
-                    // We add a fake created timestamp or use file mtime if available
                     const mapped = data.map((d: any) => ({
                         id: d.id,
                         name: d.name,
-                        url: `${API_BASE}${d.url}`, // Absolute URL to Pi
-                        created: { seconds: Date.now() / 1000 } // TODO: Use real file time
+                        url: `${API_BASE}${d.url}`,
+                        created: { seconds: d.created }
                     }));
                     callback(mapped);
                 }
@@ -39,8 +36,8 @@ export class LocalBackend implements IFrameBackend {
             }
         };
 
-        fetchImages(); // Initial fetch
-        this.imageInterval = window.setInterval(fetchImages, 5000); // Poll every 5s
+        fetchImages();
+        this.imageInterval = window.setInterval(fetchImages, 5000);
 
         return () => {
             if (this.imageInterval) window.clearInterval(this.imageInterval);
@@ -48,25 +45,17 @@ export class LocalBackend implements IFrameBackend {
     }
 
     subscribeAuth(callback: (user: any) => void): () => void {
-        // Local mode is always "authenticated" as a generic local user
-        callback({ uid: 'local_user', email: 'local@frame.ink' });
+        callback({ uid: 'local_user', email: 'local@framelab.ink' });
         return () => { };
     }
 
     subscribeConfig(callback: (config: Config) => void): () => void {
         const fetchConfig = async () => {
             try {
-                const res = await fetch(`${API_BASE}/api/status`);
+                const res = await fetch(`${API_BASE}/api/config`);
                 if (res.ok) {
                     const data = await res.json();
-                    // Map status to Config
-                    // Note: Local API status is currently simple. We might need to expand it.
-                    // For now, let's mock the config based on status or add a /config endpoint to python
-                    callback({
-                        current_image: data.current_image || '',
-                        rotation: 90,
-                        interval: 0 // Local mode might control schedule differently
-                    });
+                    callback(data as Config);
                 }
             } catch (e) {
                 // quiet fail
@@ -98,9 +87,12 @@ export class LocalBackend implements IFrameBackend {
     }
 
     async renameImage(id: string, newName: string): Promise<void> {
-        // Local API rename not implemented yet in python, we can add it later
-        // For now, maybe just re-upload or implement a move endpoint
-        console.warn("Rename not supported in local mode v1");
+        const res = await fetch(`${API_BASE}/api/images/${id}/rename`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name: newName })
+        });
+        if (!res.ok) throw new Error("Rename failed");
     }
 
     async displayImage(id: string, name: string): Promise<void> {

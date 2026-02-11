@@ -1,17 +1,17 @@
 #!/bin/bash
 
-# Frame.ink Installer
+# FrameLab Installer
 # Usage: sudo bash install.sh
 
 echo "========================================="
-echo "🖼️  Installing Frame.ink Client..."
+echo "🖼️  Installing FrameLab Client..."
 echo "========================================="
 
 # 1. Variables
 USER_HOME=$(eval echo ~${SUDO_USER})
 INSTALL_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-VENV_DIR="$USER_HOME/.virtualenvs/frame-ink"
-SERVICE_NAME="frame-ink.service"
+VENV_DIR="$USER_HOME/.virtualenvs/framelab"
+SERVICE_NAME="framelab.service"
 SERVICE_FILE="/etc/systemd/system/$SERVICE_NAME"
 USER_NAME=${SUDO_USER}
 
@@ -128,32 +128,32 @@ log_step 6 "Installing Web App (Self-Hosted)..." "~1 minute"
 # Let's add a prompt or argument. For this implementation, we'll auto-install if the folder doesn't exist?
 # Actually, let's just install it. It's small.
 
-WEB_DIR="$USER_HOME/frame-ink/www"
+WEB_DIR="$USER_HOME/framelab/www"
 if [ ! -d "$WEB_DIR" ] || [ "$1" == "--update" ]; then
     echo "      🌐 Downloading Web App from GitHub..."
     rm -rf "$WEB_DIR"
     mkdir -p "$WEB_DIR"
     
     # Download the latest release asset
-    run_visible curl -L -o /tmp/frame-ink-web.zip "https://github.com/senor/frame-ink-oss/releases/latest/download/frame-ink-web.zip"
+    run_visible curl -L -o /tmp/framelab-web.zip "https://github.com/senor/framelab-oss/releases/latest/download/framelab-web.zip"
     
-    if [ -f "/tmp/frame-ink-web.zip" ]; then
+    if [ -f "/tmp/framelab-web.zip" ]; then
         echo "      📦 Extracting Web App..."
-        run_visible unzip -o /tmp/frame-ink-web.zip -d "$USER_HOME/frame-ink/"
-        rm /tmp/frame-ink-web.zip
+        run_visible unzip -o /tmp/framelab-web.zip -d "$USER_HOME/framelab/"
+        rm /tmp/framelab-web.zip
         # Ensure permissions are correct for the user
         chown -R $USER_NAME:$USER_NAME "$WEB_DIR"
     else
         echo "      ❌ Failed to download web app. Using placeholder."
-        echo "<h1>Frame.ink Self-Hosted</h1><p>Offline Install - Web App Missing.</p>" > "$WEB_DIR/index.html"
+        echo "<h1>FrameLab Self-Hosted</h1><p>Offline Install - Web App Missing.</p>" > "$WEB_DIR/index.html"
     fi
 fi
 
 # Create Web Service
-WEB_SERVICE_FILE="/etc/systemd/system/frame-web.service"
+WEB_SERVICE_FILE="/etc/systemd/system/framelab-web.service"
 cat <<EOF | sudo tee $WEB_SERVICE_FILE > /dev/null
 [Unit]
-Description=Frame.ink Web Interface
+Description=FrameLab Web Interface
 After=network.target
 
 [Service]
@@ -170,16 +170,16 @@ EOF
 
 echo "      🔄 Enabling Web Service..."
 run_visible sudo systemctl daemon-reload
-run_visible sudo systemctl enable frame-web.service
-run_visible sudo systemctl restart frame-web.service
-echo "      ✅ Web App active at http://frame-ink.local:8080"
+run_visible sudo systemctl enable framelab-web.service
+run_visible sudo systemctl restart framelab-web.service
+echo "      ✅ Web App active at http://framelab.local:8080"
 # 8. Service Setup
 log_step 7 "Finalizing Services..." "Instant"
 
-# A. Cloud Client Service (frame-ink.service)
+# A. Cloud Client Service (framelab.service)
 cat <<EOF | sudo tee $SERVICE_FILE > /dev/null
 [Unit]
-Description=Frame.ink Cloud Client (Firebase)
+Description=FrameLab Cloud Client (Firebase)
 After=network.target
 
 [Service]
@@ -196,11 +196,11 @@ Environment=GRPC_ENABLE_FORK_SUPPORT=0
 WantedBy=multi-user.target
 EOF
 
-# B. Local API Service (frame-api.service)
-API_SERVICE_FILE="/etc/systemd/system/frame-api.service"
+# B. Local API Service (framelab-api.service)
+API_SERVICE_FILE="/etc/systemd/system/framelab-api.service"
 cat <<EOF | sudo tee $API_SERVICE_FILE > /dev/null
 [Unit]
-Description=Frame.ink Local API (FastAPI)
+Description=FrameLab Local API (FastAPI)
 After=network.target
 
 [Service]
@@ -222,8 +222,8 @@ run_visible sudo systemctl daemon-reload
 run_visible sudo systemctl enable $SERVICE_NAME
 run_visible sudo systemctl restart $SERVICE_NAME
 
-run_visible sudo systemctl enable frame-api.service
-run_visible sudo systemctl restart frame-api.service
+run_visible sudo systemctl enable framelab-api.service
+run_visible sudo systemctl restart framelab-api.service
 
 echo "========================================="
 echo "✅ Installation Complete!"

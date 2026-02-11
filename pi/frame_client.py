@@ -8,7 +8,7 @@ from google.auth.transport.requests import Request
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 IMAGE_DIR = os.path.join(BASE_DIR, "images")
 CRED_PATH = os.path.join(BASE_DIR, "service-account.json")
-APP_ID = "frame-ink"
+APP_ID = "framelab"
 PROJECT_ID = "frame-ink"
 # REST Endpoints
 QUERY_URL = f"https://firestore.googleapis.com/v1/projects/{PROJECT_ID}/databases/(default)/documents/artifacts/{APP_ID}/public/data:runQuery"

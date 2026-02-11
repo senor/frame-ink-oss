@@ -57,11 +57,11 @@ export function OnboardingModal({ isOpen, onClose, onComplete, isDemo = false }:
                         <p className="mono-font text-sm leading-relaxed text-ink dark:text-white">
                             {isLocal ? (
                                 <>
-                                    Hardware detected. You are running <span className="font-bold text-ink dark:text-white uppercase underline decoration-[var(--blue)] underline-offset-4">Frame.<span className="serif-italic text-[color:var(--blue)] lowercase tracking-tight font-bold">ink</span></span> directly on your device.
+                                    Hardware detected. You are running <span className="font-bold text-ink dark:text-white uppercase underline decoration-[var(--blue)] underline-offset-4">Frame.<span className="serif-italic text-[color:var(--blue)] lowercase tracking-tight font-bold">lab</span></span> directly on your device.
                                 </>
                             ) : (
                                 <>
-                                    This is beta, that is why <span className="font-bold text-ink dark:text-white uppercase underline decoration-[var(--pink)] underline-offset-4">Frame.<span className="serif-italic text-[color:var(--pink)] lowercase tracking-tight font-bold">ink</span></span> is built exclusively for the <span className="font-bold text-ink dark:text-white underline decoration-[var(--blue)] underline-offset-4">Inky Impression (7.3&quot;)</span>.
+                                    This is beta, that is why <span className="font-bold text-ink dark:text-white uppercase underline decoration-[var(--pink)] underline-offset-4">Frame.<span className="serif-italic text-[color:var(--pink)] lowercase tracking-tight font-bold">lab</span></span> is built exclusively for the <span className="font-bold text-ink dark:text-white underline decoration-[var(--blue)] underline-offset-4">Inky Impression (7.3&quot;)</span>.
                                 </>
                             )}
                         </p>
@@ -112,7 +112,7 @@ export function OnboardingModal({ isOpen, onClose, onComplete, isDemo = false }:
                                 <Cpu className="w-6 h-6 text-ink dark:text-white" />
                             </div>
                             <h3 className="brand-font text-2xl mb-4 leading-none">Local_Standalone</h3>
-                            <p className="mono-font text-[10px] leading-relaxed opacity-60 flex-grow mb-8 font-black">Continue using Frame.ink entirely from your local network. No cloud required.</p>
+                            <p className="mono-font text-[10px] leading-relaxed opacity-60 flex-grow mb-8 font-black">Continue using FrameLab entirely from your local network. No cloud required.</p>
                             <button className="btn btn-primary btn-md w-full uppercase">START_UPLOADING</button>
                         </Card>
 
@@ -122,8 +122,8 @@ export function OnboardingModal({ isOpen, onClose, onComplete, isDemo = false }:
                                 <div className="tag-marker tag-marker-recommended">ENHANCED</div>
                                 <Globe className="w-6 h-6 text-[var(--blue)]" />
                             </div>
-                            <h3 className="brand-font text-2xl mb-4 leading-none text-ink dark:text-white lowercase italic">Link to <span className="brand-font not-italic">Frame.ink Cloud</span></h3>
-                            <p className="mono-font text-[10px] leading-relaxed opacity-60 flex-grow mb-8 text-[var(--blue)]/80 font-black">Sync with your Frame.ink account to update art from anywhere in the world.</p>
+                            <h3 className="brand-font text-2xl mb-4 leading-none text-ink dark:text-white lowercase italic">Link to <span className="brand-font not-italic">FrameLab Cloud</span></h3>
+                            <p className="mono-font text-[10px] leading-relaxed opacity-60 flex-grow mb-8 text-[var(--blue)]/80 font-black">Sync with your FrameLab account to update art from anywhere in the world.</p>
                             <button className="btn btn-secondary btn-md w-full uppercase">CONNECT_ACCOUNT</button>
                         </Card>
                     </>
@@ -145,7 +145,7 @@ export function OnboardingModal({ isOpen, onClose, onComplete, isDemo = false }:
                                 <div className="tag-marker tag-marker-recommended">RECOMMENDED</div>
                                 <Globe className="w-6 h-6 text-[var(--blue)]" />
                             </div>
-                            <h3 className="brand-font text-2xl mb-4 leading-none lowercase italic text-ink dark:text-white">Connect Frame.ink <span className="brand-font not-italic">to your frame</span></h3>
+                            <h3 className="brand-font text-2xl mb-4 leading-none lowercase italic text-ink dark:text-white">Connect FrameLab <span className="brand-font not-italic">to your frame</span></h3>
                             <p className="mono-font text-[10px] leading-relaxed opacity-60 flex-grow mb-8 text-[var(--blue)]/80 font-black">Link wirelessly. No terminal required. Update art and display images from anywhere.</p>
                             <button className="btn btn-primary btn-md w-full uppercase">INITIALIZE</button>
                         </Card>
@@ -157,7 +157,7 @@ export function OnboardingModal({ isOpen, onClose, onComplete, isDemo = false }:
                             </div>
                             <h3 className="brand-font text-2xl mb-4 leading-none">Frame already setup</h3>
                             <p className="mono-font text-[10px] leading-relaxed opacity-60 flex-grow mb-8 px-1">
-                                Already running InkyPi? Frame.ink can co-exist alongside your existing system.
+                                Already running InkyPi? FrameLab can co-exist alongside your existing system.
                             </p>
                             <button className="btn btn-secondary btn-md w-full uppercase">Add_Frame.ink</button>
                         </Card>
@@ -211,12 +211,12 @@ export function OnboardingModal({ isOpen, onClose, onComplete, isDemo = false }:
                             title="Install Frame.ink"
                             description={
                                 <>
-                                    Clone the repo and run the installer on your Pi. For detailed steps, see <a href="https://github.com/senor/frame-ink-oss/blob/main/README_SELF_HOSTED.md" target="_blank" className="underline font-bold">README_SELF_HOSTED.md</a>.
+                                    Clone the repo and run the installer on your Pi. For detailed steps, see <a href="https://github.com/senor/framelab-oss/blob/main/README_SELF_HOSTED.md" target="_blank" className="underline font-bold">README_SELF_HOSTED.md</a>.
                                 </>
                             }
                         />
                         <CodeBlock
-                            code="git clone https://github.com/senor/frame-ink-oss.git ~/frame-ink && cd ~/frame-ink && sudo bash pi/install.sh"
+                            code="git clone https://github.com/senor/framelab-oss.git ~/framelab && cd ~/framelab && sudo bash pi/install.sh"
                             accentColor="blue"
                         />
                     </div>
@@ -230,7 +230,7 @@ export function OnboardingModal({ isOpen, onClose, onComplete, isDemo = false }:
                 <div className="space-y-8">
                     <h3 className="brand-font text-3xl text-[var(--orange)] uppercase tracking-tighter">Existing_System_Sync</h3>
                     <InfoBox variant="orange" icon={<AlertCircle className="w-4 h-4" />}>
-                        <p>Parallel Mode: Frame.ink can run alongside existing projects. We won't disable your current services.</p>
+                        <p>Parallel Mode: FrameLab can run alongside existing projects. We won't disable your current services.</p>
                     </InfoBox>
                     <div className="space-y-6">
                         <NumberedListItem
@@ -239,7 +239,7 @@ export function OnboardingModal({ isOpen, onClose, onComplete, isDemo = false }:
                             description="Use this specific script to add Frame.ink without conflicts."
                         />
                         <CodeBlock
-                            code="curl -sSL https://get.frame.ink/add | bash"
+                            code="curl -sSL https://get.framelab.ink/add | bash"
                             accentColor="orange"
                         />
                     </div>

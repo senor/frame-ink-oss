@@ -44,7 +44,7 @@ export function FeedbackWidget({ user, appId, notify }: FeedbackWidgetProps) {
 
         setIsSubmitting(true);
         try {
-            const currentAppId = appId || 'frame-ink';
+            const currentAppId = appId || 'framelab';
             await addDoc(collection(db, 'artifacts', currentAppId, 'public', 'data', 'feedback'), {
                 text: feedback.trim(),
                 user_email: user?.email || 'anonymous',

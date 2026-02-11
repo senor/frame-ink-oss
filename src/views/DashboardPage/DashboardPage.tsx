@@ -158,10 +158,9 @@ export default function DashboardPage() {
           return;
         }
 
-        const demoArtists = ['TADANORI', 'HIROSHI', 'NOMA_BAR', 'JEAN_JULLIEN', 'GEOFF_MCFETRIDGE'];
-        const fromDb = list.filter(img =>
-          demoArtists.some(artist => img.name.toUpperCase().includes(artist))
-        );
+        // Show all images from DB in demo mode instead of filtering by artist
+        // This ensures photos previously "stored" are actually visible
+        const fromDb = list;
 
         const uniqueFallbacks = fallbacks.filter(fallback =>
           !fromDb.some(dbImg => dbImg.name === fallback.name)
