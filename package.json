@@ -1,0 +1,35 @@
+{
+  "name": "frame-ink",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview",
+    "sync:pi": "nodemon --watch pi -e py,sh,md,txt --exec \"scp -r pi/*.py pi/*.sh pi/*.md pi/*.txt mashi@frame-ink.local:~/frame-ink/ && echo '🚀 Synced to Pi'\""
+  },
+  "dependencies": {
+    "cropperjs": "^1.6.2",
+    "firebase": "^11.6.1",
+    "lucide-react": "^0.474.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-router-dom": "^6.30.1"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.1.18",
+    "@types/react": "^18.3.18",
+    "@types/react-dom": "^18.3.5",
+    "@vitejs/plugin-react-swc": "^3.7.1",
+    "@vitest/browser-playwright": "^4.0.18",
+    "@vitest/coverage-v8": "^4.0.18",
+    "autoprefixer": "^10.4.24",
+    "playwright": "^1.58.1",
+    "postcss": "^8.5.6",
+    "tailwindcss": "^4.1.18",
+    "typescript": "^5.7.3",
+    "vite": "^6.1.0",
+    "vitest": "^4.0.18"
+  }
+}

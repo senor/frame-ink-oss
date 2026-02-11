@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>frame.ink | Beautiful Art for your E-Ink Frame</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        paper: '#EBE6D7',
+                        ink: '#1D1D1B',
+                        'ink-blue': '#0A32B4',
+                        'ink-orange': '#F15A24',
+                        'ink-gold': '#DBA111',
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Syne:wght@800&family=Instrument+Serif:ital@1&family=Inter:wght@400;700;900&family=Space+Mono:wght@400;700&display=swap">
+
+    <style>
+        :root {
+            --paper: #EBE6D7;
+            --ink: #1D1D1B;
+            --ink-blue: #0A32B4;
+            --ink-orange: #F15A24;
+            --ink-gold: #DBA111;
+            --white: #FFFFFF;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--paper);
+            color: var(--ink);
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* FONTS */
+        .brand-font {
+            font-family: 'Syne', sans-serif;
+            text-transform: uppercase;
+            letter-spacing: -0.02em;
+        }
+
+        .heading-font {
+            font-family: 'Inter', sans-serif;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: -0.02em;
+        }
+
+        .serif-italic {
+            font-family: 'Instrument Serif', serif;
+            font-style: italic;
+        }
+
+        .mono-font {
+            font-family: 'Space Mono', monospace;
+        }
+
+        /* TEXTURE */
+        .paper-grain {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 9999;
+            opacity: 0.12;
+            mix-blend-mode: multiply;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+        }
+
+        /* SHADOWS & BORDERS */
+        .risograph-shadow {
+            box-shadow: 6px 6px 0px 0px var(--ink-blue), 12px 12px 0px 0px var(--ink-gold);
+        }
+
+        .risograph-shadow-alt {
+            box-shadow: 6px 6px 0px 0px var(--ink-orange), 12px 12px 0px 0px var(--ink);
+        }
+
+        .hard-border {
+            border: 2.5px solid var(--ink);
+        }
+
+        .hard-shadow {
+            box-shadow: 4px 4px 0px 0px var(--ink);
+        }
+
+        /* INTERACTIONS */
+        .nav-btn {
+            background-color: var(--ink);
+            color: var(--paper);
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            font-size: 11px;
+            padding: 12px 24px;
+            border: none;
+            box-shadow: 4px 4px 0px 0px rgba(0, 0, 0, 0.2);
+            transition: transform 0.1s ease;
+        }
+
+        .nav-btn:hover {
+            transform: translate(-1px, -1px);
+            box-shadow: 6px 6px 0px 0px rgba(0, 0, 0, 0.2);
+        }
+
+        .nav-btn:active {
+            transform: translate(2px, 2px);
+            box-shadow: 0px 0px 0px 0px;
+        }
+
+        .btn-press {
+            border: 2.5px solid var(--ink);
+            box-shadow: 4px 4px 0px 0px var(--ink);
+            transition: all 0.1s ease;
+            text-transform: uppercase;
+            font-weight: 900;
+            letter-spacing: 0.08em;
+            font-size: 10px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-press:hover {
+            transform: translate(-2px, -2px);
+            box-shadow: 6px 6px 0px 0px var(--ink);
+        }
+
+        .btn-press:active {
+            transform: translate(2px, 2px);
+            box-shadow: 0px 0px 0px 0px var(--ink);
+        }
+
+        /* Gradient Animation */
+        @keyframes gradient-anim {
+            0% {
+                background-position: 0% 50%;
+            }
+
+            50% {
+                background-position: 100% 50%;
+            }
+
+            100% {
+                background-position: 0% 50%;
+            }
+        }
+
+        .btn-gradient-hover {
+            background-color: var(--ink-blue);
+            color: var(--white);
+            border: 2.5px solid var(--ink);
+        }
+
+        .btn-gradient-hover:hover {
+            background: linear-gradient(270deg, var(--ink-blue), var(--ink-orange), var(--ink-gold));
+            background-size: 400% 400%;
+            animation: gradient-anim 3s ease infinite;
+            border-color: var(--ink);
+            transform: translate(-2px, -2px);
+            box-shadow: 6px 6px 0px 0px var(--ink);
+        }
+
+        .card-lift {
+            transition: all 0.2s cubic-bezier(0.165, 0.84, 0.44, 1);
+        }
+
+        .card-lift:hover {
+            transform: translateY(-4px);
+            z-index: 10;
+        }
+
+        /* INPUTS */
+        .custom-input {
+            background: var(--paper);
+            border: 2.5px solid var(--ink);
+            padding: 1rem;
+            width: 100%;
+            font-family: 'Space Mono', monospace;
+            outline: none;
+            font-weight: bold;
+        }
+
+        .terminal-box {
+            background: var(--ink);
+            color: #22c55e;
+            padding: 1.5rem;
+            font-size: 0.75rem;
+            font-family: 'Space Mono';
+            max-height: 200px;
+            overflow-y: auto;
+            border: 2.5px solid #333;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border: 2px solid var(--ink);
+            text-transform: uppercase;
+            font-size: 10px;
+            font-weight: 900;
+            background: var(--grit-yellow);
+            letter-spacing: 0.1em;
+        }
+
+        /* E-Ink Refresh Animation */
+        @keyframes eink-flash {
+            0% {
+                filter: invert(0);
+            }
+
+            50% {
+                filter: invert(1) grayscale(1);
+            }
+
+            100% {
+                filter: invert(0);
+            }
+        }
+
+        .refreshing {
+            animation: eink-flash 0.6s steps(3);
+        }
+
+        /* Modal Utilities */
+        .modal-bg-tactical {
+            background-color: var(--grit-yellow);
+            color: var(--ink);
+        }
+    </style>
+</head>
+
+<body class="selection:bg-blue-700 selection:text-white">
+
+    <div class="paper-grain"></div>
+
+    <!-- Navigation -->
+    <nav class="max-w-7xl mx-auto px-6 py-8 flex flex-col md:flex-row justify-between items-center relative z-20">
+        <div class="flex items-center gap-4 self-start md:self-auto mb-6 md:mb-0">
+            <div class="w-12 h-12 bg-black flex items-center justify-center border-2 border-black hard-shadow">
+                <span class="text-[#EBE6D7] font-black text-xl brand-font">F</span>
+            </div>
+            <div class="flex flex-col">
+                <h2 class="brand-font font-black tracking-tight leading-none text-xl md:text-2xl">frame.ink</h2>
+                <p class="text-[9px] uppercase opacity-50 tracking-[0.2em] font-bold">Reflective Art Ecosystem</p>
+            </div>
+        </div>
+
+        <div class="flex items-center gap-6 md:gap-8 self-end md:self-auto">
+            <a href="#how-it-works"
+                class="text-[11px] font-black uppercase tracking-[0.15em] hover:text-spectra-blue transition-colors hidden md:block">Method</a>
+            <a href="#sustain"
+                class="text-[11px] font-black uppercase tracking-[0.15em] hover:text-spectra-orange transition-colors hidden md:block">Sustain</a>
+            <button onclick="window.location.href='/app'"
+                class="text-[11px] font-black uppercase tracking-[0.15em] hover:text-ink transition-colors border-b-2 border-transparent hover:border-ink">Launch
+                App</button>
+            <button onclick="toggleModal()" class="nav-btn">Set up frame</button>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section
+        class="max-w-7xl mx-auto px-6 py-12 md:py-20 grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center relative z-10">
+        <div class="order-2 lg:order-1 animate-scale-in">
+            <h1 class="text-ink mb-8 leading-[0.9]">
+                <span class="brand-font text-5xl md:text-6xl lg:text-7xl font-black block">SIMPLIFY YOUR</span>
+                <span class="brand-font text-5xl md:text-6xl lg:text-7xl font-black block text-ink-blue">E-INK
+                    FRAME</span>
+                <span class="serif-italic text-5xl md:text-6xl lg:text-7xl text-ink-orange block mt-2">setup.</span>
+            </h1>
+            <p class="text-lg leading-relaxed mb-10 max-w-md font-bold text-ink/80">
+                frame.ink is the easiest way to configure and manage your reflective displays. <span
+                    class="bg-ink-gold px-1 border border-ink">Calm Tech</span> design, professional art, zero
+                technical debt.
+            </p>
+            <div class="flex flex-wrap gap-4">
+                <button onclick="toggleModal()"
+                    class="btn-press btn-gradient-hover px-10 py-5 text-xs risograph-shadow">Start Setup</button>
+                <a href="#how-it-works" class="btn-press bg-white text-ink px-8 py-5 text-xs">How it works</a>
+            </div>
+        </div>
+
+        <div class="relative order-1 lg:order-2 group">
+            <div id="hero-frame"
+                class="hard-border p-5 risograph-shadow transition-transform duration-500 bg-white rotate-1 group-hover:rotate-0">
+                <div class="aspect-[4/5] bg-gray-200 overflow-hidden relative border-2 border-ink/10">
+                    <img src="https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?auto=format&fit=crop&q=80&w=800"
+                        alt="Main Preview" class="w-full h-full object-cover grayscale brightness-110 contrast-150">
+                    <div class="absolute inset-0 opacity-10 pointer-events-none"
+                        style="background-image: radial-gradient(var(--ink) 1px, transparent 0); background-size: 8px 8px;">
+                    </div>
+                </div>
+                <div class="mt-4 flex justify-between items-center border-t-2 border-ink pt-3">
+                    <div class="text-[9px] font-black uppercase tracking-widest">
+                        <span class="text-ink-blue">●</span> STATUS: ACTIVE
+                    </div>
+                    <button onclick="refreshPreview()"
+                        class="text-[9px] font-black uppercase underline decoration-2 decoration-ink-orange">Manual
+                        Sync</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Value Propositions -->
+    <section id="how-it-works" class="max-w-7xl mx-auto px-6 py-24 relative z-10">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-12">
+            <div class="bg-white p-8 hard-border risograph-shadow card-lift relative h-full">
+                <div
+                    class="absolute top-8 left-8 w-8 h-8 border-2 border-ink flex items-center justify-center font-black text-xs text-ink/40">
+                    01</div>
+                <div class="mt-12">
+                    <h3 class="heading-font text-3xl mb-4">Zero<br>Code.</h3>
+                    <p class="text-[10px] font-bold uppercase tracking-widest leading-loose opacity-60">
+                        Broken project syndrome ends here. One configuration file. No SSH, no complex scripts, no
+                        technical debt.
+                    </p>
+                </div>
+            </div>
+            <div class="bg-white p-8 hard-border risograph-shadow card-lift relative h-full">
+                <div
+                    class="absolute top-8 left-8 w-8 h-8 border-2 border-ink flex items-center justify-center font-black text-xs text-ink/40">
+                    02</div>
+                <div class="mt-12">
+                    <h3 class="heading-font text-3xl mb-4">True<br>Calm.</h3>
+                    <p class="text-[10px] font-bold uppercase tracking-widest leading-loose opacity-60">
+                        Reflective light only. Tuned for living spaces where screens don't belong. Art that feels like
+                        physical print.
+                    </p>
+                </div>
+            </div>
+            <div class="bg-white p-8 hard-border risograph-shadow card-lift relative h-full">
+                <div
+                    class="absolute top-8 left-8 w-8 h-8 border-2 border-ink flex items-center justify-center font-black text-xs text-ink/40">
+                    03</div>
+                <div class="mt-12">
+                    <h3 class="heading-font text-3xl mb-4">Hardware<br>Agnostic.</h3>
+                    <p class="text-[10px] font-bold uppercase tracking-widest leading-loose opacity-60">
+                        A single dashboard for Waveshare, Inkplate, and Inky. Manage your mantle from your phone
+                        instantly.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Configuration Walkthrough -->
+    <section class="max-w-6xl mx-auto px-6 py-20 relative z-10">
+        <div class="bg-white border-[2.5px] border-ink p-10 md:p-16 risograph-shadow-alt relative overflow-hidden">
+            <div class="absolute inset-0 opacity-5 pointer-events-none"
+                style="background-image: radial-gradient(var(--ink) 2px, transparent 0); background-size: 12px 12px;">
+            </div>
+            <div class="relative z-10 grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+                <div>
+                    <h2 class="heading-font text-5xl md:text-6xl mb-6 leading-none">Instant<br><span
+                            class="text-ink-orange">Configuration</span></h2>
+                    <p class="text-sm font-bold uppercase tracking-tight mb-10 opacity-70 max-w-sm">
+                        We package your credentials into a single setup file (frame.json) so you never have to touch a
+                        terminal.
+                    </p>
+                    <div class="space-y-5">
+                        <div class="flex items-center gap-4 border-b-2 border-ink/10 pb-4">
+                            <span class="mono-font font-bold text-ink-blue text-sm">01</span>
+                            <p class="text-[10px] font-black uppercase tracking-widest">Enter Wi-Fi details on our
+                                secure portal.</p>
+                        </div>
+                        <div class="flex items-center gap-4 border-b-2 border-ink/10 pb-4">
+                            <span class="mono-font font-bold text-ink-blue text-sm">02</span>
+                            <p class="text-[10px] font-black uppercase tracking-widest">Download your unique
+                                configuration file.</p>
+                        </div>
+                        <div class="flex items-center gap-4 border-b-2 border-ink/10 pb-4">
+                            <span class="mono-font font-bold text-ink-blue text-sm">03</span>
+                            <p class="text-[10px] font-black uppercase tracking-widest">Drag file to SD Card & Power on.
+                            </p>
+                        </div>
+                    </div>
+                    <button onclick="toggleModal()" class="mt-8 btn-press bg-ink text-white px-8 py-4 text-xs">Generate
+                        Config File</button>
+                </div>
+                <div class="hidden lg:flex justify-center">
+                    <div class="bg-paper p-8 border-[2.5px] border-ink -rotate-2 hard-shadow relative">
+                        <div
+                            class="w-56 h-64 border-2 border-dashed border-ink/20 flex flex-col items-center justify-center p-6 text-center bg-white">
+                            <div
+                                class="w-12 h-16 border-2 border-ink bg-gray-50 mb-4 flex items-center justify-center text-xs font-bold">
+                                JSON</div>
+                            <p class="text-[9px] font-black uppercase opacity-40">frame.json<br />ready for deploy</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Sustain Project Section -->
+    <section id="sustain" class="max-w-6xl mx-auto px-6 py-32 relative z-10">
+        <div class="text-center mb-20">
+            <h2 class="brand-font text-6xl md:text-7xl font-black mb-4">SUSTAIN</h2>
+            <p class="uppercase tracking-[0.4em] text-[10px] font-black opacity-30">Community Project / Freemium Model
+            </p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto items-end">
+
+            <!-- Community (Unified Style - White BG) -->
+            <div class="bg-white hard-border p-8 flex flex-col justify-between h-[420px] relative">
+                <div>
+                    <h4 class="text-[10px] font-black uppercase text-ink-blue tracking-[0.2em] mb-4">Open Source
+                    </h4>
+                    <p class="heading-font text-4xl mb-6">Community</p>
+                    <ul class="space-y-3 text-[10px] font-black uppercase opacity-50 tracking-widest">
+                        <li>• Local-only updates</li>
+                        <li>• Manual SD flashing</li>
+                        <li>• Community Forums</li>
+                        <li>• 100% Free Forever</li>
+                    </ul>
+                </div>
+                <div class="flex flex-col gap-3">
+                    <a href="https://github.com/senor/frame-ink-oss" target="_blank"
+                        class="btn-press py-3 w-full bg-ink text-white flex items-center justify-center gap-2 hover:bg-black no-underline">
+                        <span class="text-[10px]">GitHub Repo</span>
+                    </a>
+                    <button
+                        class="btn-press py-3 w-full bg-white flex items-center justify-center gap-2 hover:bg-gray-50">
+                        <span class="text-[10px]">Buy me a coffee</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Lifetime (Unified Style - White BG, Scaled, Shadowed) -->
+            <div
+                class="bg-white hard-border p-8 risograph-shadow flex flex-col justify-between h-[460px] relative z-10 scale-105 transform-gpu">
+                <div
+                    class="absolute -top-3 left-1/2 -translate-x-1/2 bg-ink text-paper px-4 py-1 text-[9px] font-black uppercase tracking-widest border border-paper">
+                    Recommended</div>
+                <div>
+                    <h4 class="text-[10px] font-black uppercase text-ink tracking-[0.2em] mb-4">Lifetime Config</h4>
+                    <p class="heading-font text-5xl mb-2">$20</p>
+                    <p class="text-[9px] font-black uppercase tracking-tighter opacity-40 mb-8">One-time contribution
+                    </p>
+                    <ul class="space-y-4 text-[10px] font-black uppercase tracking-widest">
+                        <li>• Instant Setup File</li>
+                        <li>• Lifetime Frame Sync</li>
+                        <li>• Studio Dithering Access</li>
+                    </ul>
+                </div>
+                <button class="btn-press bg-ink text-white py-4 w-full text-xs">Get Lifetime Seed</button>
+            </div>
+
+            <!-- Subscription (Unified Style - White BG, Full Color) -->
+            <div class="bg-white hard-border p-8 flex flex-col justify-between h-[420px]">
+                <div>
+                    <h4 class="text-[10px] font-black uppercase text-ink-orange tracking-[0.2em] mb-4">Optional
+                        Support</h4>
+                    <p class="heading-font text-3xl mb-1">$5 <span class="text-sm">/ mo</span></p>
+                    <p class="text-[9px] font-black uppercase opacity-40 mb-8">Cancel anytime</p>
+                    <ul class="space-y-3 text-[10px] font-black uppercase opacity-50 tracking-widest">
+                        <li>• Multi-frame Dashboard</li>
+                        <li>• Mobile Gallery Sync</li>
+                        <li>• Support active Dev</li>
+                    </ul>
+                </div>
+                <button class="btn-press border-ink text-ink py-4 w-full bg-white hover:bg-gray-50">Join Studio</button>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="py-12 px-6 border-t-[4px] border-ink bg-white relative z-10">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-8">
+            <div class="flex items-center gap-4">
+                <div class="w-8 h-8 bg-black flex items-center justify-center border-2 border-black">
+                    <span class="text-white text-[10px] font-black brand-font">F</span>
+                </div>
+                <span class="text-[10px] font-black uppercase tracking-[0.2em] opacity-40">© 2024 frame.ink</span>
+            </div>
+            <div class="flex gap-8 text-[10px] font-black uppercase tracking-widest">
+                <a href="#" class="hover:text-ink-blue">Setup Manual</a>
+                <a href="#" class="hover:text-ink-orange">Privacy</a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Setup Modal -->
+    <div id="ui-modal"
+        class="hidden fixed inset-0 z-[200] flex items-center justify-center p-6 bg-[#1D1D1B]/60 backdrop-blur-sm"
+        onclick="closeModalOnBG(event)">
+        <div
+            class="modal-bg-tactical hard-border max-w-lg w-full p-10 relative risograph-shadow animate-scale-in border-[3px] border-ink shadow-[8px_8px_0px_0px_#1D1D1B]">
+            <button onclick="toggleModal()"
+                class="absolute top-6 right-6 font-black text-2xl hover:text-white transition-colors">×</button>
+
+            <h3 class="heading-font text-4xl mb-6 text-ink">Instant<br>Config</h3>
+            <p class="text-[11px] font-black uppercase tracking-widest mb-8 opacity-70 leading-relaxed text-ink">
+                Generate your <span class="bg-white px-1 border border-ink">frame.json</span> file.
+            </p>
+
+            <div class="space-y-5">
+                <div>
+                    <label class="text-[9px] font-black uppercase tracking-widest mb-2 block opacity-70">Wi-Fi Network
+                        Name</label>
+                    <input type="text" id="wifi-name" class="custom-input bg-[#EBE6D7] focus:bg-white transition-colors"
+                        placeholder="SSID">
+                </div>
+                <div>
+                    <label class="text-[9px] font-black uppercase tracking-widest mb-2 block opacity-70">Wi-Fi
+                        Password</label>
+                    <input type="password" id="wifi-pass"
+                        class="custom-input bg-[#EBE6D7] focus:bg-white transition-colors" placeholder="PASSWORD">
+                </div>
+            </div>
+
+            <div id="terminal-output" class="terminal-box mt-8 hidden bg-ink text-white border-2 border-white/20"></div>
+
+            <button onclick="runSeedGenerator()" id="seed-btn"
+                class="btn-press bg-ink text-white w-full mt-8 h-14 text-xs border-2 border-ink hover:bg-white hover:text-ink">Download
+                Config File</button>
+        </div>
+    </div>
+
+    <script>
+        function toggleModal() {
+            const modal = document.getElementById('ui-modal');
+            modal.classList.toggle('hidden');
+        }
+
+        function closeModalOnBG(e) {
+            if (e.target.id === 'ui-modal') toggleModal();
+        }
+
+        async function runSeedGenerator() {
+            const term = document.getElementById('terminal-output');
+            const btn = document.getElementById('seed-btn');
+            term.classList.remove('hidden');
+            term.innerHTML = "> Initiating configuration...<br>";
+            btn.disabled = true;
+
+            const steps = [
+                "> Writing credentials...",
+                "> Generating frame.json...",
+                "> Packaging wpa_supplicant...",
+                "> DONE: Configuration ready."
+            ];
+
+            for (let step of steps) {
+                await new Promise(r => setTimeout(r, 600));
+                term.innerHTML += step + "<br>";
+                term.scrollTop = term.scrollHeight;
+            }
+
+            btn.innerHTML = "Launch Dashboard";
+            btn.disabled = false;
+            btn.onclick = function () {
+                window.location.href = '#';
+                alert("Launching Control System...");
+            };
+        }
+
+        function refreshPreview() {
+            const frame = document.getElementById('hero-frame');
+            frame.classList.add('refreshing');
+            setTimeout(() => frame.classList.remove('refreshing'), 800);
+        }
+    </script>
+</body>
+
+</html>
