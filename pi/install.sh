@@ -135,7 +135,7 @@ if [ ! -d "$WEB_DIR" ] || [ "$1" == "--update" ]; then
     mkdir -p "$WEB_DIR"
     
     # Download the latest release asset
-    run_visible curl -L -o /tmp/framelab-web.zip "https://github.com/senor/framelab-oss/releases/latest/download/framelab-web.zip"
+    run_visible curl -L -o /tmp/framelab-web.zip "https://github.com/senor/frame-ink-oss/releases/latest/download/framelab-web.zip"
     
     if [ -f "/tmp/framelab-web.zip" ]; then
         echo "      📦 Extracting Web App..."
