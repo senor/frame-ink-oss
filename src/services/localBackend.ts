@@ -70,7 +70,7 @@ export class LocalBackend implements IFrameBackend {
         };
     }
 
-    async uploadImage(file: File, name: string): Promise<void> {
+    async uploadImage(file: File, name: string, id?: string): Promise<void> {
         const formData = new FormData();
         formData.append('file', file);
 

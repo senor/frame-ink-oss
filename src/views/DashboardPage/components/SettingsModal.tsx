@@ -42,11 +42,7 @@ export function SettingsModal({ isOpen, onClose, config, setConfig, notify, onSi
             title="SYSTEM_SETTINGS"
             className="overflow-hidden"
         >
-            <div className="p-8 md:p-12 pt-10 space-y-10">
-                <div className="space-y-4">
-                    {/* Header/Info section removed as requested */}
-                </div>
-
+            <div className="p-8 md:p-12 pt-6 space-y-10">
                 <div className="space-y-8">
                     <Dropdown
                         label={
@@ -54,7 +50,7 @@ export function SettingsModal({ isOpen, onClose, config, setConfig, notify, onSi
                                 <span>REFRESH_INTERVAL</span>
                                 <Tooltip
                                     content="Manually sending an image or shuffling will not interrupt your scheduled cycle."
-                                    position="top"
+                                    position="right"
                                 >
                                     <Info className="w-3 h-3 text-ink/40 hover:text-ink cursor-help transition-colors" />
                                 </Tooltip>

@@ -16,9 +16,13 @@ export function GlobalFilters() {
                 </filter>
 
                 {/* GRAIN STIPPLE (Hi-Fi) */}
-                <filter id="grain-stipple">
-                    <feTurbulence type="fractalNoise" baseFrequency="1.8" numOctaves="4" />
-                    <feColorMatrix type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 20 -10" />
+                <filter id="cosmos-grain">
+                    <feTurbulence type="fractalNoise" baseFrequency="0.45" numOctaves="3" stitchTiles="stitch" />
+                    <feComponentTransfer>
+                        <feFuncR type="linear" slope="3" />
+                        <feFuncG type="linear" slope="3" />
+                        <feFuncB type="linear" slope="3" />
+                    </feComponentTransfer>
                     <feComposite operator="in" in2="SourceGraphic" />
                 </filter>
 

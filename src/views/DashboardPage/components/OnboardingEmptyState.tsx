@@ -16,9 +16,17 @@ function NoiseFieldCard({ accentColor = 'var(--blue)' }: NoiseFieldProps) {
         const handleMouseMove = (e: MouseEvent) => {
             const rect = container.getBoundingClientRect();
 
-            // Mouse position relative to the card container
-            const mouseX = e.clientX - rect.left;
-            const mouseY = e.clientY - rect.top;
+            // SVG ViewBox dimensions
+            const viewBoxWidth = 400;
+            const viewBoxHeight = 500;
+
+            // Calculate scale factors
+            const scaleX = viewBoxWidth / rect.width;
+            const scaleY = viewBoxHeight / rect.height;
+
+            // Mouse position relative to the card container, mapped to SVG space
+            const mouseX = (e.clientX - rect.left) * scaleX;
+            const mouseY = (e.clientY - rect.top) * scaleY;
 
             const circles = container.querySelectorAll('.noise-dot');
             const colors = ['var(--cyan)', 'var(--orange)', 'var(--purple)', 'var(--green)', 'var(--gold)', accentColor];

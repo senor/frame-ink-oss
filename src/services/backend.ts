@@ -10,6 +10,7 @@ export interface Config {
     confirmed_image?: string;
     rotation: number;
     interval: number;
+    is_refreshing?: boolean;
 }
 
 export type BackendType = 'firebase' | 'local';
@@ -24,8 +25,8 @@ export interface IFrameBackend {
     /** Subscribe to config updates */
     subscribeConfig(callback: (config: Config) => void): () => void;
 
-    /** Upload a new image */
-    uploadImage(file: File, name: string): Promise<void>;
+    /** Upload a new image or update existing one */
+    uploadImage(file: File, name: string, id?: string): Promise<void>;
 
     /** Delete an image */
     deleteImage(id: string): Promise<void>;

@@ -118,14 +118,14 @@ export function ComparisonSlider({ originalSrc, rotation = 90 }: ComparisonSlide
     return (
         <div
             ref={containerRef}
-            className="comparison-slider group select-none relative shadow-[0_0_0_1px_var(--border-color)] touch-none cursor-crosshair active:cursor-grabbing mx-auto"
             style={{
                 aspectRatio: isPortrait ? '480/800' : '800/480',
-                minHeight: '700px',
+                minHeight: '350px',
                 maxHeight: '100%',
                 maxWidth: '100%',
-                width: 'auto'
+                width: '100%'
             }}
+            className="comparison-slider group select-none relative shadow-[0_0_0_1px_var(--border-color)] touch-none cursor-crosshair active:cursor-grabbing mx-auto h-[50vh] md:h-[700px]"
             onTouchMove={onTouchMove}
             onTouchStart={onTouchMove} // Enable jump-to-tap on mobile
             onMouseMove={onMouseMove}
@@ -163,7 +163,7 @@ export function ComparisonSlider({ originalSrc, rotation = 90 }: ComparisonSlide
                             style={{ left: `${pos}%`, right: 0 }}
                         >
                             <span className="text-[10px] font-mono font-black uppercase tracking-[0.3em] text-white/50 animate-pulse bg-black/40 px-2 py-1 rounded backdrop-blur-sm">
-                                Developing...
+                                Processing...
                             </span>
                         </div>
                     </div>

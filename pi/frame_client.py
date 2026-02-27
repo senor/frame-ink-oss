@@ -171,6 +171,7 @@ def poll_loop():
         except Exception as e: print(f"Poll Err: {e}")
         time.sleep(5)
 
+
 def heartbeat():
     while True:
         token = get_token()
@@ -180,7 +181,65 @@ def heartbeat():
                 json={"fields": {"last_seen": {"timestampValue": time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime())}, "status": {"stringValue": "Online"}}})
         time.sleep(30)
 
+
+def get_public_ip():
+    try:
+        return requests.get("https://api.ipify.org", timeout=5).text
+    except:
+        return "unknown"
+
+def discovery_loop():
+    """Ran when no service-account.json is found."""
+    from utils import get_local_ip
+    import uuid
+    
+    device_id = f"frame_{uuid.uuid4().hex[:8]}"
+    local_ip = get_local_ip()
+    public_ip = get_public_ip()
+    
+    print(f"🕵️  Discovery Mode Active")
+    print(f"🆔 ID: {device_id} | Local: {local_ip}")
+    
+    DISCOVERY_URL = f"https://firestore.googleapis.com/v1/projects/{PROJECT_ID}/databases/(default)/documents/discovery/{device_id}"
+    
+    while True:
+        try:
+            # 1. Announce ourselves
+            payload = {
+                "fields": {
+                    "local_ip": {"stringValue": local_ip},
+                    "public_ip": {"stringValue": public_ip},
+                    "status": {"stringValue": "waiting_for_pairing"},
+                    "last_seen": {"timestampValue": time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime())}
+                }
+            }
+            # Check if doc exists first or just patch
+            requests.patch(f"{DISCOVERY_URL}?updateMask.fieldPaths=local_ip&updateMask.fieldPaths=public_ip&updateMask.fieldPaths=status&updateMask.fieldPaths=last_seen", json=payload)
+            
+            # 2. Check for pairing payload
+            res = requests.get(DISCOVERY_URL)
+            if res.status_code == 200:
+                data = res.json().get('fields', {})
+                if 'pairing_payload' in data:
+                    print("🎉 PAIRING RECEIVED!")
+                    cred_json = data['pairing_payload']['stringValue']
+                    with open(CRED_PATH, 'w') as f:
+                        f.write(cred_json)
+                    print("💾 Credentials saved. Restarting...")
+                    os.execv(sys.executable, ['python'] + sys.argv)
+                    
+        except Exception as e:
+            print(f"Discovery Err: {e}")
+        
+        time.sleep(10)
+
 if __name__ == "__main__":
     if not os.path.exists(IMAGE_DIR): os.makedirs(IMAGE_DIR)
-    threading.Thread(target=heartbeat, daemon=True).start()
-    poll_loop()
+    
+    # Check if we have credentials
+    if not os.path.exists(CRED_PATH):
+        discovery_loop()
+    else:
+        threading.Thread(target=heartbeat, daemon=True).start()
+        poll_loop()
+

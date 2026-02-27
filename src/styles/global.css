@@ -15,6 +15,50 @@
   animation: slide-right 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+@keyframes noise-jitter {
+  0% {
+    transform: translate(0, 0);
+  }
+
+  25% {
+    transform: translate(-2%, -2%);
+  }
+
+  50% {
+    transform: translate(-4%, 2%);
+  }
+
+  75% {
+    transform: translate(2%, -4%);
+  }
+
+  100% {
+    transform: translate(-1%, 3%);
+  }
+}
+
+.noise-living {
+  display: block;
+  position: absolute;
+  top: -100%;
+  left: -100%;
+  width: 300%;
+  height: 300%;
+  pointer-events: none;
+  opacity: 0.1;
+  animation: noise-jitter 0.15s steps(4) infinite;
+  z-index: 10;
+}
+
 /* Frame Button (Industrial/Premium variant) */
 .btn-frame {
   position: relative;

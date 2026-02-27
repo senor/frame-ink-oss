@@ -31,6 +31,7 @@ interface GalleryGridProps {
     onSendToFrame: (img: Img) => void;
     onOpenOnboarding: () => void;
     isMockEmpty: boolean;
+    isRefreshing?: boolean;
 }
 
 export function GalleryGrid({
@@ -48,12 +49,13 @@ export function GalleryGrid({
     onSendToFrame,
     onOpenOnboarding,
     isMockEmpty,
+    isRefreshing = false,
 }: GalleryGridProps) {
     const displayImages = isDemo ? [...demoEphemeralImages, ...demoImages] : images;
     const currentConfig = isDemo ? demoConfig : config;
 
     return (
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-12 w-full">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6 md:gap-12 w-full">
             {isInitialLoading ? (
                 Array.from({ length: 4 }).map((_, i) => (
                     <Card key={`skel-img-${i}`} className="p-4 card-module border-ink/20 opacity-40">
@@ -83,6 +85,7 @@ export function GalleryGrid({
                             img={img}
                             index={i}
                             isLive={currentConfig.current_image === img.name}
+                            isRefreshing={isRefreshing && currentConfig.current_image === img.name}
                             isLoaded={loaded.has(img.id)}
                             onLoad={() => onImageLoad(img.id)}
                             onClick={() => setActiveImg(img)}

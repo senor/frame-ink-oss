@@ -13,21 +13,84 @@ type OnboardingStep = 'discovery' | 'selection' | 'self' | 'managed' | 'migratio
 interface OnboardingModalProps {
     isOpen: boolean;
     onClose: () => void;
-    onComplete: (handshakeData: any) => void;
+    onComplete: (connectionData: any) => void;
     isDemo?: boolean;
 }
 
 export function OnboardingModal({ isOpen, onClose, onComplete, isDemo = false }: OnboardingModalProps) {
     const isLocal = import.meta.env.VITE_APP_MODE === 'self_hosted';
+
     const [step, setStep] = useState<OnboardingStep>(isLocal ? 'selection' : 'discovery');
     const [pairingCode, setPairingCode] = useState('');
     const [isLinking, setIsLinking] = useState(false);
+    const [discoveredDevices, setDiscoveredDevices] = useState<any[]>([]);
+    const [isScanning, setIsScanning] = useState(false);
+
+    // Network Discovery (Public IP Matching)
+    React.useEffect(() => {
+        if (isOpen && step === 'discovery' && !isLocal) {
+            let interval: any;
+            const scan = async () => {
+                try {
+                    setIsScanning(true);
+                    // 1. Get current public IP (simulated or real)
+                    const ipRes = await fetch('https://api.ipify.org?format=json');
+                    const { ip: publicIp } = await ipRes.json();
+
+                    // 2. Query Firestore for unassigned devices on this IP
+                    // Using REST for simplicity as per existing patterns
+                    const discoveryRes = await fetch(`https://firestore.googleapis.com/v1/projects/frame-ink/databases/(default)/documents/discovery`);
+                    const data = await discoveryRes.json();
+
+                    if (data.documents) {
+                        const nearby = data.documents.filter((doc: any) => {
+                            const fields = doc.fields;
+                            const sameIp = fields.public_ip?.stringValue === publicIp;
+                            const isWaiting = fields.status?.stringValue === 'waiting_for_pairing';
+
+                            // Check if last_seen is within last 2 minutes
+                            const lastSeen = new Date(fields.last_seen?.timestampValue).getTime();
+                            const isFresh = (Date.now() - lastSeen) < 120000;
+
+                            return sameIp && isWaiting && isFresh;
+                        }).map((doc: any) => ({
+                            id: doc.name.split('/').pop(),
+                            localIp: doc.fields.local_ip.stringValue,
+                            name: `Frame_${doc.name.split('/').pop().split('_')[1]}`
+                        }));
+
+                        setDiscoveredDevices(nearby);
+                    }
+                } catch (e) {
+                    console.error("Discovery Scan Fail:", e);
+                } finally {
+                    setIsScanning(false);
+                }
+            };
+
+            scan();
+            interval = setInterval(scan, 15000);
+            return () => clearInterval(interval);
+        }
+    }, [isOpen, step, isLocal]);
 
     const resetFlow = () => {
         setStep('discovery');
         setPairingCode('');
         setIsLinking(false);
+        setDiscoveredDevices([]);
     };
+
+    const handlePairDiscovered = (device: any) => {
+        setStep('managed');
+        setPairingCode('AUTO'); // Trigger auto-pairing state
+        // In a real app, we would now push the pairing_payload to Firestore for this device
+        setIsLinking(true);
+        setTimeout(() => {
+            onComplete({ status: 'live', type: 'managed', deviceId: device.id });
+        }, 8000);
+    };
+
 
     const handleLink = () => {
         setIsLinking(true);
@@ -82,6 +145,9 @@ export function OnboardingModal({ isOpen, onClose, onComplete, isDemo = false }:
                                             <p>
                                                 Required: <a href="https://shop.pimoroni.com/products/inky-impression" target="_blank" rel="noopener noreferrer" className="highlight-marker underline decoration-[var(--blue)] underline-offset-2 hover:opacity-80 transition-opacity">Inky Impression frame</a>
                                             </p>
+                                            <p>
+                                                Guide: <a href="https://learn.pimoroni.com/article/getting-started-with-inky-impression?gad_source=1&gad_campaignid=21808011029&gbraid=0AAAAADqO9eLwuaY6cVmT0GU7xzklpFx9F&gclid=Cj0KCQiA18DMBhDeARIsABtYwT2XlodfBE8JTqn8kIJKaGUobZnCeHaY9cZd2PUAzBfujDq5faSVkB0aAk2eEALw_wcB" target="_blank" rel="noopener noreferrer" className="highlight-marker underline decoration-[var(--blue)] underline-offset-2 hover:opacity-80 transition-opacity">Assembling your frame</a>
+                                            </p>
                                         </>
                                     )}
                                 </div>
@@ -89,12 +155,43 @@ export function OnboardingModal({ isOpen, onClose, onComplete, isDemo = false }:
                         </div>
                     </div>
 
-                    <div className="flex flex-col gap-3">
+
+                    <div className="flex flex-col gap-4">
+                        {discoveredDevices.length > 0 && (
+                            <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
+                                <div className="tag-marker tag-marker-recommended mb-2">NEARBY_DEVICE_FOUND</div>
+                                {discoveredDevices.map(device => (
+                                    <Card
+                                        key={device.id}
+                                        variant="recommended"
+                                        className="p-4 flex items-center justify-between group border-2 border-[var(--blue)]"
+                                        interactive
+                                        onClick={() => handlePairDiscovered(device)}
+                                    >
+                                        <div className="flex items-center gap-4">
+                                            <div className="p-2 bg-[var(--blue)]/10 rounded-full">
+                                                <Zap className="w-4 h-4 text-[var(--blue)] animate-pulse" />
+                                            </div>
+                                            <div>
+                                                <p className="mono-font text-[10px] font-black">{device.name}</p>
+                                                <p className="mono-font text-[8px] opacity-40">{device.localIp}</p>
+                                            </div>
+                                        </div>
+                                        <ArrowRight className="w-4 h-4 text-[var(--blue)] group-hover:translate-x-1 transition-transform" />
+                                    </Card>
+                                ))}
+                                <div className="mt-4 border-t border-void/5 pt-4">
+                                    <p className="mono-font text-[8px] opacity-40 text-center italic">Or continue with manual setup below</p>
+                                </div>
+                            </div>
+                        )}
+
                         <button onClick={() => setStep('selection')} className="btn btn-primary-special w-full h-16 flex items-center justify-center gap-3">
                             <span className="mono-font text-sm font-black">{isLocal ? "Continue to Dashboard" : "I have the frame ready to go"}</span>
                             <ArrowRight className="w-5 h-5" />
                         </button>
                     </div>
+
                 </div>
             </div>
         </div>
@@ -185,8 +282,8 @@ export function OnboardingModal({ isOpen, onClose, onComplete, isDemo = false }:
                         </svg>
                         <div className="halftone-dark absolute inset-0" />
                     </div>
-                    <h3 className="brand-font text-3xl uppercase animate-pulse text-center mb-2">Establishing_Link...</h3>
-                    <p className="mono-font text-xs opacity-60 text-center tracking-widest uppercase">Handshake in progress (12s)</p>
+                    <h3 className="brand-font text-3xl uppercase animate-pulse text-center mb-2">CONNECTING...</h3>
+                    <p className="mono-font text-xs opacity-60 text-center tracking-widest uppercase">Connection in progress (12s)</p>
                 </div>
             );
         }
@@ -211,12 +308,12 @@ export function OnboardingModal({ isOpen, onClose, onComplete, isDemo = false }:
                             title="Install Frame.ink"
                             description={
                                 <>
-                                    Clone the repo and run the installer on your Pi. For detailed steps, see <a href="https://github.com/senor/framelab-oss/blob/main/README_SELF_HOSTED.md" target="_blank" className="underline font-bold">README_SELF_HOSTED.md</a>.
+                                    Clone the repo and run the installer on your Pi. For detailed steps, see <a href="https://github.com/senor/frame-ink-oss/blob/main/README_SELF_HOSTED.md" target="_blank" className="underline font-bold">README_SELF_HOSTED.md</a>.
                                 </>
                             }
                         />
                         <CodeBlock
-                            code="git clone https://github.com/senor/framelab-oss.git ~/framelab && cd ~/framelab && sudo bash pi/install.sh"
+                            code="git clone https://github.com/senor/frame-ink-oss.git ~/framelab && cd ~/framelab && sudo bash pi/install.sh"
                             accentColor="blue"
                         />
                     </div>

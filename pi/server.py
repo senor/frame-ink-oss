@@ -1,3 +1,4 @@
+
 from fastapi import FastAPI, UploadFile, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
@@ -5,18 +6,56 @@ from pathlib import Path
 import shutil
 import os
 import time
-
 import json
+import socket
+from zeroconf import ServiceInfo, Zeroconf
 
 # Internal Modules
 from utils import update_display
 
 app = FastAPI(title="FrameLab API")
 
+# --- MDNS ADVERTISING ---
+def start_mdns():
+    try:
+        zeroconf = Zeroconf()
+        hostname = socket.gethostname()
+        local_ip = socket.gethostbyname(f"{hostname}.local") if ".local" not in hostname else socket.gethostbyname(hostname)
+        
+        # Fallback IP detection
+        if local_ip.startswith("127."):
+            s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            s.connect(("8.8.8.8", 80))
+            local_ip = s.getsockname()[0]
+            s.close()
+
+        info = ServiceInfo(
+            "_framelab._tcp.local.",
+            f"{hostname}._framelab._tcp.local.",
+            addresses=[socket.inet_aton(local_ip)],
+            port=8000,
+            properties={"version": "1.0.0", "path": "/api/status"},
+            server=f"{hostname}.local.",
+        )
+        zeroconf.register_service(info)
+        print(f"📡 mDNS: Advertising {hostname}.local on {local_ip}:8000")
+        return zeroconf, info
+    except Exception as e:
+        print(f"⚠️ mDNS Failed: {e}")
+        return None, None
+
+# Global storage to keep zeroconf alive
+zc, zc_info = start_mdns()
+
+
 # --- CONFIG ---
 BASE_DIR = Path(__file__).parent.absolute()
 IMAGE_DIR = BASE_DIR / "images"
 CONFIG_FILE = BASE_DIR / "local_config.json"
+
+# Hardware Tracking
+LAST_REFRESH_TIME = 0
+REFRESH_DURATION = 22 # Estimated seconds for Inky Impression 7 colors
 
 # Default Config
 DEFAULT_CONFIG = {
@@ -56,19 +95,27 @@ app.add_middleware(
 @app.get("/api/status")
 def get_status():
     """Returns system health and current config."""
+    global LAST_REFRESH_TIME
     config = load_config()
+    
+    # Check if hardware is currently busy
+    is_refreshing = (time.time() - LAST_REFRESH_TIME) < REFRESH_DURATION
+    
     return {
         "status": "online",
         "time": time.ctime(),
         "storage_usage": shutil.disk_usage(BASE_DIR).used // (1024*1024),
         "image_count": len(list(IMAGE_DIR.glob("*"))),
+        "is_refreshing": is_refreshing,
         "config": config
     }
 
 @app.get("/api/config")
 def get_config():
     """Fetch the current device configuration."""
-    return load_config()
+    config = load_config()
+    is_refreshing = (time.time() - LAST_REFRESH_TIME) < REFRESH_DURATION
+    return {**config, "is_refreshing": is_refreshing}
 
 @app.post("/api/config")
 async def update_config(config: dict):
@@ -110,6 +157,7 @@ async def upload_image(file: UploadFile):
 @app.post("/api/display/{filename}")
 def display_image(filename: str):
     """Trigger the E-Ink display update."""
+    global LAST_REFRESH_TIME
     file_path = IMAGE_DIR / filename
     if not file_path.exists():
         raise HTTPException(status_code=404, detail="Image not found")
@@ -119,6 +167,9 @@ def display_image(filename: str):
         config = load_config()
         config["current_image"] = filename
         save_config(config)
+        
+        # Mark as refreshing
+        LAST_REFRESH_TIME = time.time()
         
         update_display(file_path)
         return {"status": "success", "message": f"Displaying {filename}"}

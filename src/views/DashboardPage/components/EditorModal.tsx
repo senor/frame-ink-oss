@@ -112,9 +112,11 @@ export function EditorModal({ activeImg, setActiveImg, config, backend, user, no
                             id: activeImg.id === 'PENDING' ? `demo_${Date.now()}` : activeImg.id,
                             name,
                             url,
-                            created: { seconds: Math.floor(Date.now() / 1000) }
+                            created: activeImg.id === 'PENDING'
+                                ? { seconds: Math.floor(Date.now() / 1000) }
+                                : (activeImg.created || { seconds: Math.floor(Date.now() / 1000) })
                         };
-                        notify('PIECE_PUBLISHED // DEMO', 'success');
+                        notify('IMAGE_PUBLISHED // DEMO', 'success');
                         if (onImageUpdate) onImageUpdate(newImg);
                         void sendToFrame(newImg);
                     } else {
@@ -124,7 +126,7 @@ export function EditorModal({ activeImg, setActiveImg, config, backend, user, no
 
                         if (activeImg.isNew) {
                             await backend.uploadImage(file, name);
-                            notify('PIECE_PUBLISHED // ARCHIVED', 'success');
+                            notify('IMAGE_PUBLISHED', 'success');
                             // Optimistic display not needed as backend subscription will catch it, but we can do it if id known. 
                             // Upload doesn't return ID easily in current interface without refetch, let's rely on subscription update or just close.
                             // Actually user interaction pattern expects display:
@@ -135,8 +137,8 @@ export function EditorModal({ activeImg, setActiveImg, config, backend, user, no
                             // Our interface treats upload as new/overwrite by name.
                             // If ID triggers update, we might need specific update logic.
                             // For now let's assume reuse name = overwrite content.
-                            await backend.uploadImage(file, name);
-                            notify('PIECE UPDATED', 'success');
+                            await backend.uploadImage(file, name, activeImg.id);
+                            notify('IMAGE_UPDATED', 'success');
                         }
                     }
                 } catch (e: any) {
@@ -155,7 +157,7 @@ export function EditorModal({ activeImg, setActiveImg, config, backend, user, no
     const handleDelete = async () => {
         if (!activeImg || activeImg.isNew) return;
         await backend.deleteImage(activeImg.id);
-        notify('PIECE_DELETED', 'success');
+        notify('IMAGE_DELETED', 'success');
         setActiveImg(null);
     };
 
@@ -187,14 +189,14 @@ export function EditorModal({ activeImg, setActiveImg, config, backend, user, no
             isOpen={!!activeImg}
             onClose={() => setActiveImg(null)}
             maxWidth="max-w-6xl"
-            title={isCropping ? "WORKBENCH // REFRAME" : "WORKBENCH // SIMULATOR"}
-            className={`flex flex-col md:flex-row overflow-hidden ${isCropping ? 'min-h-[70vh]' : ''} ${config.rotation === 90 ? 'h-auto md:h-[750px]' : 'h-auto md:h-[680px]'} max-h-[90vh] overflow-y-auto md:overflow-hidden`}
+            title={isCropping ? "IMAGE_EDITOR // CROP" : "IMAGE_EDITOR // PREVIEW"}
+            className={`flex flex-col md:flex-row overflow-hidden ${isCropping ? 'min-h-[60vh] md:min-h-[70vh]' : ''} ${config.rotation === 90 ? 'h-auto md:h-[750px]' : 'h-auto md:h-[680px]'} max-h-[95vh] overflow-y-auto md:overflow-hidden`}
         >
-            <div className={`relative flex-none md:flex-1 bg-[#0A0A0A] flex items-center justify-center md:border-r-[1.5px] border-white/10 group ${isCropping ? 'min-h-[65vh]' : ''} md:min-h-0`}>
+            <div className={`relative flex-none md:flex-1 bg-[#0A0A0A] flex items-center justify-center md:border-r-[1.5px] border-white/10 group ${isCropping ? 'min-h-[50vh] md:min-h-0' : 'min-h-[40vh] md:min-h-0'}`}>
                 <div className="absolute inset-0 pattern-grid-lg opacity-[0.03]" />
 
                 {isCropping ? (
-                    <div className="p-8 md:p-12 w-full h-full flex items-center justify-center relative z-10">
+                    <div className="p-4 md:p-12 w-full h-full flex items-center justify-center relative z-10">
                         {cropperLoading && (
                             <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/50 backdrop-blur-sm">
                                 <Loader2 size={48} className="animate-spin text-white" />
@@ -209,13 +211,13 @@ export function EditorModal({ activeImg, setActiveImg, config, backend, user, no
                 )}
             </div>
 
-            <div className="flex-none w-full md:w-[380px] p-8 md:p-10 flex flex-col relative bg-surface dark:bg-[#121212] text-ink dark:text-white border-t md:border-t-0 md:border-l-[1.5px] border-border-color">
-                <div className="space-y-6">
+            <div className="flex-none w-full md:w-[380px] p-6 md:p-10 flex flex-col relative bg-surface dark:bg-[#121212] text-ink dark:text-white border-t md:border-t-0 md:border-l-[1.5px] border-border-color">
+                <div className="space-y-4 md:space-y-6">
                     {isRenaming ? (
                         <div className="flex flex-col gap-4">
                             <input
                                 type="text"
-                                className="w-full text-3xl brand-font border-b-2 border-current bg-transparent focus:outline-none p-0 pb-2"
+                                className="w-full text-2xl md:text-3xl brand-font border-b-2 border-current bg-transparent focus:outline-none p-0 pb-2"
                                 value={renameValue}
                                 onChange={(e) => setRenameValue(e.target.value)}
                                 placeholder="ENTER NAME"
@@ -227,8 +229,8 @@ export function EditorModal({ activeImg, setActiveImg, config, backend, user, no
                             </div>
                         </div>
                     ) : (
-                        <div className="space-y-6">
-                            <h2 className="text-3xl md:text-4xl brand-font leading-[0.85] ink-bleed break-words max-w-full">
+                        <div className="space-y-2 md:space-y-6">
+                            <h2 className="text-2xl md:text-4xl brand-font leading-tight md:leading-[0.85] ink-bleed break-words max-w-full">
                                 {activeImg.name.split('.')[0]}
                             </h2>
                             {!activeImg.isNew && (
@@ -245,15 +247,15 @@ export function EditorModal({ activeImg, setActiveImg, config, backend, user, no
                             )}
                         </div>
                     )}
-                    <div className="pt-2">
-                        <p className="text-[10px] font-black opacity-30 uppercase tracking-[0.3em] mono-font truncate italic">REF. {activeImg.id}</p>
+                    <div className="pt-1 md:pt-2">
+                        <p className="text-[9px] md:text-[10px] font-black opacity-30 uppercase tracking-[0.3em] mono-font truncate italic">REF. {activeImg.id}</p>
                     </div>
                 </div>
 
-                <div className="mt-auto space-y-4">
+                <div className="mt-8 md:mt-auto space-y-4">
                     {!isCropping ? (
                         <div className="grid grid-cols-2 gap-3">
-                            <button type="button" onClick={() => { setIsCropping(true); setCropperLoading(true); }} className="btn btn-secondary h-14 flex items-center justify-center gap-3 font-black uppercase text-[11px] tracking-widest">
+                            <button type="button" onClick={() => { setIsCropping(true); setCropperLoading(true); }} className="btn btn-secondary h-14 flex items-center justify-center gap-3 font-black uppercase text-[10px] md:text-[11px] tracking-widest px-2">
                                 <Crop size={18} /> Reframe
                             </button>
                             <button
@@ -265,7 +267,7 @@ export function EditorModal({ activeImg, setActiveImg, config, backend, user, no
                                         void handleDelete();
                                     }
                                 }}
-                                className="btn btn-secondary h-14 flex items-center justify-center gap-3 font-black uppercase text-[11px] tracking-widest"
+                                className="btn btn-secondary h-14 flex items-center justify-center gap-3 font-black uppercase text-[10px] md:text-[11px] tracking-widest px-2"
                             >
                                 <Trash2 size={18} /> Delete
                             </button>
@@ -279,7 +281,7 @@ export function EditorModal({ activeImg, setActiveImg, config, backend, user, no
                                         if (!cropper) return;
                                         cropper.rotate(90);
                                     }}
-                                    className="btn btn-secondary btn-sm flex-1 font-black uppercase gap-2"
+                                    className="btn btn-secondary btn-md flex-1 font-black uppercase gap-2 text-[10px]"
                                 >
                                     <RotateCw size={14} /> Rotate
                                 </button>
@@ -289,7 +291,7 @@ export function EditorModal({ activeImg, setActiveImg, config, backend, user, no
                                         const data = cropper?.getData();
                                         if (data) cropper?.scaleX(data.scaleX * -1);
                                     }}
-                                    className="btn btn-secondary btn-sm flex-1 font-black uppercase gap-2"
+                                    className="btn btn-secondary btn-md flex-1 font-black uppercase gap-2 text-[10px]"
                                 >
                                     <FlipHorizontal size={14} /> Flip
                                 </button>
@@ -297,16 +299,16 @@ export function EditorModal({ activeImg, setActiveImg, config, backend, user, no
                         </div>
                     )}
 
-                    <div className="pt-2">
+                    <div className="pt-4 sticky bottom-0 bg-surface dark:bg-[#121212] z-20 -mx-6 px-6 pb-6 md:static md:mx-0 md:p-0">
                         {isCropping ? (
                             <div className="flex flex-col gap-3">
                                 <button
                                     type="button"
                                     onClick={() => void handlePublish()}
                                     disabled={processing}
-                                    className="btn btn-primary-special btn-md w-full disabled:opacity-50"
+                                    className="btn btn-primary-special h-16 w-full disabled:opacity-50 text-xs shadow-[0_4px_15px_rgba(255,115,0,0.3)]"
                                 >
-                                    {processing ? <Loader2 className="animate-spin" /> : <span className="flex items-center gap-2"><CheckCircle size={16} /> {hardwareConnected ? 'Save & Display' : 'Save to Gallery'}</span>}
+                                    {processing ? <Loader2 className="animate-spin" /> : <span className="flex items-center justify-center gap-3 font-black tracking-[0.15em] uppercase"><CheckCircle size={20} /> {hardwareConnected ? 'Publish & Display' : 'Publish to Gallery'}</span>}
                                 </button>
                                 <button type="button" onClick={() => {
                                     if (activeImg?.isNew) {
@@ -322,15 +324,19 @@ export function EditorModal({ activeImg, setActiveImg, config, backend, user, no
                             <button
                                 type="button"
                                 onClick={() => void sendToFrame(activeImg)}
-                                className="btn btn-primary-special h-16 w-full gap-3 text-sm font-black tracking-widest uppercase"
+                                className="btn btn-primary-special h-20 md:h-16 w-full gap-3 text-xs md:text-sm font-black tracking-[0.2em] uppercase shadow-[0_4px_20px_rgba(59,130,246,0.3)]"
                             >
                                 {hardwareConnected ? (
-                                    <>
-                                        <Zap size={20} /> DISPLAY_ON_FRAME
-                                    </>
+                                    <div className="flex items-center justify-center gap-4">
+                                        <Zap size={24} className="animate-pulse" />
+                                        <div className="flex flex-col items-start leading-none">
+                                            <span className="text-[14px]">DISPLAY_ON_FRAME</span>
+                                            <span className="text-[9px] opacity-60 font-mono mt-1">Immediate Sync Protocol</span>
+                                        </div>
+                                    </div>
                                 ) : (
                                     <>
-                                        <CheckCircle size={20} /> SAVE_TO_GALLERY
+                                        <CheckCircle size={22} /> SAVE_TO_GALLERY
                                     </>
                                 )}
                             </button>

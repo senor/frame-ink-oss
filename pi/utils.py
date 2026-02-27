@@ -33,3 +33,16 @@ def update_display(image_path: Path):
     except Exception as e:
         print(f"❌ Display Error: {e}")
         raise e
+
+def get_local_ip():
+    """Retrieve the primary local IP address of the system."""
+    import socket
+    try:
+        # This doesn't actually connect but helps find the right interface
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.connect(("8.8.8.8", 80))
+        ip = s.getsockname()[0]
+        s.close()
+        return ip
+    except Exception:
+        return "127.0.0.1"

@@ -72,7 +72,9 @@ export default function DashboardPage() {
   const [isRenaming, setIsRenaming] = useState(false);
   const [renameValue, setRenameValue] = useState('');
   const [loaded, setLoaded] = useState<Set<string>>(new Set());
-  const [isInitialLoading, setIsInitialLoading] = useState(true); // Loading state for flash prevention
+  const [imagesLoaded, setImagesLoaded] = useState(false);
+  const [configLoaded, setConfigLoaded] = useState(false);
+  const isInitialLoading = !imagesLoaded || !configLoaded;
   const { isDemo } = useDemo();
 
   // Ephemeral state for Demo Mode
@@ -121,13 +123,15 @@ export default function DashboardPage() {
     // Force test states if param present
     if (testState === 'denied') {
       setApprovedStatus('rejected');
-      setIsInitialLoading(false);
+      setImagesLoaded(true);
+      setConfigLoaded(true);
       return;
     }
     if (testState === 'empty') {
       setApprovedStatus('approved');
       setImages([]);
-      setIsInitialLoading(false);
+      setImagesLoaded(true);
+      setConfigLoaded(true);
       return;
     }
 
@@ -150,32 +154,26 @@ export default function DashboardPage() {
         { id: 'fallback_5', name: 'GEOFF_MCFETRIDGE.png', url: 'https://images.unsplash.com/photo-1494438639946-1ebd1d20bf85?auto=format&fit=crop&q=80&w=800' },
       ];
 
-      // For demo, we still peek at DB if we can, but fallback is primary
-      unsubImages = backend.subscribeImages((list) => {
+      // For demo, we do NOT peek at DB to ensure user privacy.
+      // Demo only uses hardcoded fallbacks + ephemeral uploads.
+
+      const updateDemoImages = () => {
         if (isMockEmpty) {
           setDemoImages([]);
-          setIsInitialLoading(false);
-          return;
+        } else {
+          const uniqueFallbacks = fallbacks.filter(fallback =>
+            !demoEphemeralImages.some(eImg => eImg.id === fallback.id)
+          );
+          setDemoImages(uniqueFallbacks);
         }
+        setImagesLoaded(true);
+        setConfigLoaded(true);
+      };
 
-        // Show all images from DB in demo mode instead of filtering by artist
-        // This ensures photos previously "stored" are actually visible
-        const fromDb = list;
+      updateDemoImages();
 
-        const uniqueFallbacks = fallbacks.filter(fallback =>
-          !fromDb.some(dbImg => dbImg.name === fallback.name)
-        );
-
-        const combinedImages = [
-          ...demoEphemeralImages,
-          ...fromDb.filter(dbImg => !demoEphemeralImages.some(eImg => eImg.id === dbImg.id)),
-          ...uniqueFallbacks.filter(fImg => !demoEphemeralImages.some(eImg => eImg.id === fImg.id) && !fromDb.some(dbImg => dbImg.id === fImg.id))
-        ];
-
-        setDemoImages(combinedImages);
-        setIsInitialLoading(false);
-      });
-      return () => unsubImages?.();
+      // No subscription needed for demo static content
+      return () => { };
     }
 
     // --- REAL MODE (LOCAL or CLOUD) ---
@@ -183,7 +181,8 @@ export default function DashboardPage() {
       setUser(u);
       if (!u) {
         setApprovedStatus('none');
-        setIsInitialLoading(false);
+        setImagesLoaded(true);
+        setConfigLoaded(true);
         return;
       }
 
@@ -205,6 +204,7 @@ export default function DashboardPage() {
 
         unsubConfig = backend.subscribeConfig((cfg) => {
           setConfig(cfg);
+          setConfigLoaded(true);
         });
 
         unsubImages = backend.subscribeImages((list) => {
@@ -221,11 +221,12 @@ export default function DashboardPage() {
             });
             return list;
           });
-          setIsInitialLoading(false);
+          setImagesLoaded(true);
         });
       } else {
         setApprovedStatus('rejected');
-        setIsInitialLoading(false);
+        setImagesLoaded(true);
+        setConfigLoaded(true);
       }
     });
 
@@ -308,19 +309,19 @@ export default function DashboardPage() {
 
   const [deleteCandidate, setDeleteCandidate] = useState<Img | null>(null);
 
-  const confirmPurge = async () => {
+  const confirmDelete = async () => {
     if (!deleteCandidate) return;
     try {
       if (isDemo) {
         setDemoEphemeralImages(prev => prev.filter(i => i.id !== deleteCandidate.id)); // Use demoEphemeralImages
-        notify('ITEM PURGED (DEMO)', 'success');
+        notify('IMAGE_DELETED (DEMO)', 'success');
       } else {
         await backend.deleteImage(deleteCandidate.id);
-        notify('ITEM PURGED', 'success');
+        notify('IMAGE_DELETED', 'success');
       }
     } catch (e: any) {
-      console.error("Purge Error:", e);
-      notify('PURGE FAILED', 'error');
+      console.error("Delete Error:", e);
+      notify('DELETE_FAILED', 'error');
     }
     setDeleteCandidate(null);
   };
@@ -348,8 +349,8 @@ export default function DashboardPage() {
     }
   };
 
-  const randomBeam = () => {
-    const list = isDemo ? [...demoEphemeralImages, ...demoImages] : images; // Combine for random beam
+  const randomDisplay = () => {
+    const list = isDemo ? [...demoEphemeralImages, ...demoImages] : images; // Combine for random display
     if (list.length === 0) return;
     void sendToFrame(list[Math.floor(Math.random() * list.length)]!);
   };
@@ -374,7 +375,7 @@ export default function DashboardPage() {
         <div className="relative z-10 max-w-md w-full text-center">
           <h1 className="brand-font mb-4 leading-none uppercase transition-colors duration-300">
             <span className="text-5xl">Frame</span>
-            <span className="serif-italic lowercase text-blue text-4xl">ink</span>
+            <span className="serif-italic lowercase text-blue text-4xl">lab</span>
           </h1>
           <p className="mono-font text-[10px] font-black uppercase tracking-[0.4em] mb-12 opacity-60">SYSTEM_LOGIN // AUTHORIZATION</p>
 
@@ -415,7 +416,7 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="min-h-screen p-8 md:p-16 flex flex-col items-center max-w-[1600px] mx-auto">
+    <div className="min-h-screen p-4 sm:p-8 md:p-16 flex flex-col items-center max-w-[1600px] mx-auto">
       <div className="grainy-overlay" />
       <div className="grainy-bg" />
       <div className="atmosphere-bg" />
@@ -438,9 +439,10 @@ export default function DashboardPage() {
         handleFileUpload={handleFileUpload}
         onOpenUrlImport={() => setModals((m) => ({ ...m, url: true }))}
         onOpenSettings={() => setModals((m) => ({ ...m, settings: true }))}
-        onRandomBeam={randomBeam}
+        onRandomDisplay={randomDisplay}
         onOpenOnboarding={import.meta.env.VITE_APP_MODE === 'self_hosted' ? () => { } : () => setModals(m => ({ ...m, onboarding: true }))}
         isMockEmpty={isMockEmpty}
+        isRefreshing={config.is_refreshing}
         toggleMockSetup={() => {
           if (isMockEmpty) {
             setIsMockEmpty(false);
@@ -467,6 +469,7 @@ export default function DashboardPage() {
         onImageLoad={(id) => setLoaded(prev => new Set(prev).add(id))}
         setActiveImg={setActiveImg}
         onSendToFrame={sendToFrame}
+        isRefreshing={config.is_refreshing}
         onOpenOnboarding={import.meta.env.VITE_APP_MODE === 'self_hosted' ? () => { } : () => setModals(m => ({ ...m, onboarding: true }))}
         isMockEmpty={isMockEmpty}
       />
@@ -499,7 +502,7 @@ export default function DashboardPage() {
         title="DELETE_PROTOCOL"
       >
         <div className="p-12 relative text-center text-void">
-          <h3 className="brand-font text-5xl mb-6 uppercase">DELETE_PIECE?</h3>
+          <h3 className="brand-font text-5xl mb-6 uppercase">DELETE IMAGE?</h3>
           <div className="mb-10">
             <p className="mono-font text-xs font-black uppercase tracking-[0.2em] opacity-80">
               DELETE_PROTOCOL // <span className="bg-void text-white px-2 py-0.5">{deleteCandidate?.name}</span>
@@ -509,15 +512,15 @@ export default function DashboardPage() {
           <div className="flex gap-4">
             <button
               className="btn-system-primary flex-1 bg-void text-white h-16 text-sm font-black tracking-[0.2em] uppercase border-2 border-void hover:bg-void/90 transition-all font-black"
-              onClick={confirmPurge}
+              onClick={confirmDelete}
             >
-              EXECUTE_DELETE
+              DELETE
             </button>
             <button
-              className="btn btn-tertiary flex-1 h-16 text-[10px] font-black tracking-widest uppercase border-2 border-void text-void hover:bg-void hover:text-white transition-all bg-transparent font-black"
+              className="btn btn-tertiary flex-1 h-16 text-sm font-black tracking-[0.2em] uppercase border-2 border-void text-void hover:bg-void hover:text-white transition-all bg-transparent"
               onClick={() => setDeleteCandidate(null)}
             >
-              CANCEL_ACTION
+              CANCEL
             </button>
           </div>
         </div>
@@ -544,8 +547,8 @@ export default function DashboardPage() {
           <OnboardingModal
             isOpen={modals.onboarding}
             onClose={() => setModals((m) => ({ ...m, onboarding: false }))}
-            onComplete={(handshakeData) => {
-              console.log('Hardware connected:', handshakeData);
+            onComplete={(connectionData) => {
+              console.log('Hardware connected:', connectionData);
               notify('HARDWARE_CONNECTED', 'success');
 
               // Optimistic local update to hide the card immediately
@@ -595,7 +598,7 @@ export default function DashboardPage() {
                   if (e.target?.result) {
                     setActiveImg({
                       url: e.target.result as string,
-                      name: 'IMPORTED_ARTIFACT.png',
+                      name: 'IMPORTED_IMAGE.png',
                       isNew: true,
                       id: 'PENDING'
                     });
